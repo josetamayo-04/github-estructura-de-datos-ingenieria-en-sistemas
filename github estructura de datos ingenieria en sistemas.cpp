@@ -7,7 +7,7 @@
 
 #include <iostream>
 #include <string>
-#include <queue>
+
 using namespace std;
 
 struct Paciente {
@@ -15,8 +15,79 @@ struct Paciente {
     int* numero_documento;
 };
 
+struct Nodo {
+    Paciente paciente;
+    Nodo* siguiente;
+};
+
+struct Cola {
+    Nodo* inicio;
+    Nodo* fin;
+};
+
+void inicializarCola(Cola& cola) {
+    cola.inicio = nullptr;
+    cola.fin = nullptr;
+}
+
+bool esVacia(Cola& cola) {
+    return (cola.inicio == nullptr);
+}
+
+void encolar(Cola& cola, Paciente paciente) {
+    Nodo* nuevo = new Nodo;
+    nuevo->paciente = paciente;
+    nuevo->siguiente = nullptr;
+
+    if (esVacia(cola)) {
+        cola.inicio = nuevo;
+        cola.fin = nuevo;
+    } else {
+        cola.fin->siguiente = nuevo;
+        cola.fin = nuevo;
+    }
+}
+
+void desencolar(Cola& cola) {
+    if (!esVacia(cola)) {
+        Nodo* temp = cola.inicio;
+        cola.inicio = cola.inicio->siguiente;
+        delete temp->paciente.nombre;
+        delete temp->paciente.numero_documento;
+        delete temp;
+    }
+}
+
+void verPacientes(Cola& cola) {
+    if (esVacia(cola)) {
+        cout << "No hay pacientes registrados.\n\n";
+    } else {
+        cout << "Lista de pacientes en orden de registro:\n";
+        int num_registro = 1;
+        Nodo* temp = cola.inicio;
+        while (temp != nullptr) {
+            Paciente paciente_actual = temp->paciente;
+            cout << num_registro << ". " << *paciente_actual.nombre << " - " << *paciente_actual.numero_documento << "\n";
+            temp = temp->siguiente;
+            num_registro++;
+        }
+        cout << "\n";
+    }
+}
+
+int contarPacientes(Cola& cola) {
+    int cantidad = 0;
+    Nodo* temp = cola.inicio;
+    while (temp != nullptr) {
+        cantidad++;
+        temp = temp->siguiente;
+    }
+    return cantidad;
+}
+
 int main() {
-    queue<Paciente> cola_pacientes;
+    Cola cola_pacientes;
+    inicializarCola(cola_pacientes);
     int opcion;
     do {
         cout << "Menu:\n";
@@ -28,7 +99,7 @@ int main() {
         cin >> opcion;
         
         switch(opcion) {
-            case 1:
+            case 1: {
                 Paciente paciente;
                 paciente.nombre = new string;
                 paciente.numero_documento = new int;
@@ -36,27 +107,15 @@ int main() {
                 cin >> *paciente.nombre;
                 cout << "Ingrese el número de documento del paciente: ";
                 cin >> *paciente.numero_documento;
-                cola_pacientes.push(paciente);
+                encolar(cola_pacientes, paciente);
                 cout << "Paciente registrado exitosamente.\n\n";
                 break;
+            }
             case 2:
-                if (cola_pacientes.empty()) {
-                    cout << "No hay pacientes registrados.\n\n";
-                } else {
-                    cout << "Lista de pacientes en orden de registro:\n";
-                    int num_registro = 1;
-                    queue<Paciente> copia_cola_pacientes = cola_pacientes;
-                    while (!copia_cola_pacientes.empty()) {
-                        Paciente paciente_actual = copia_cola_pacientes.front();
-                        cout << num_registro << ". " << *paciente_actual.nombre << " - " << *paciente_actual.numero_documento << "\n";
-                        copia_cola_pacientes.pop();
-                        num_registro++;
-                    }
-                    cout << "\n";
-                }
+                verPacientes(cola_pacientes);
                 break;
             case 3:
-                cout << "Se han registrado " << cola_pacientes.size() << " pacientes.\n\n";
+                cout << "Se han registrado " << contarPacientes(cola_pacientes) << " pacientes.\n\n";
                 break;
             case 4:
                 cout << "Hasta luego!\n";
@@ -67,14 +126,5 @@ int main() {
         }
     } while (opcion != 4);
     
-    // Liberar memoria
-    while (!cola_pacientes.empty()) {
-        Paciente paciente_actual = cola_pacientes.front();
-        delete paciente_actual.nombre;
-        delete paciente_actual.numero_documento;
-        cola_pacientes.pop();
-    }
-    
     return 0;
 }
-
