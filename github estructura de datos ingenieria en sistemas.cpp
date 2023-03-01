@@ -2,114 +2,79 @@
 
 //1. Mostrar los pacientes de tal manera que se muestre 1, 2, 3, etc según el orden de registro (Colas).
 // Jose Arley Angulo Tamayo I.S
-//                                              Desarrollo
+//Agregue a su aplicación FIFO una alternativa que me permita saber cuantos pacientes se han ingresado. 
+//                                                            Desarrollo
 
 #include <iostream>
-#include <queue>
 #include <string>
-#include <cctype>
+#include <queue>
 using namespace std;
 
 struct Paciente {
-    string nombre;
-    string documento;
+    string* nombre;
+    int* numero_documento;
 };
 
-queue<Paciente*> cola_pacientes;
-
-bool validar_nombre(const string& nombre) {
-    for (char c : nombre) {
-        if (!isalpha(c) && !isspace(c)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-bool validar_documento(const string& documento) {
-    for (char c : documento) {
-        if (!isdigit(c)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-void registrar_paciente() {
-    string nombre, documento;
-    cout << "Ingrese el nombre del paciente: ";
-    getline(cin, nombre);
-    while (!validar_nombre(nombre)) {
-        cout << "Nombre inválido. Ingrese sólo letras y espacios: ";
-        getline(cin, nombre);
-    }
-    cout << "Ingrese el número de documento del paciente: ";
-    getline(cin, documento);
-    while (!validar_documento(documento)) {
-        cout << "Número de documento inválido. Ingrese sólo números: ";
-        getline(cin, documento);
-    }
-
-    // Crear un nuevo objeto Paciente en el heap
-    Paciente* nuevo_paciente = new Paciente;
-    nuevo_paciente->nombre = nombre;
-    nuevo_paciente->documento = documento;
-
-    // Agregar el paciente a la cola
-    cola_pacientes.push(nuevo_paciente);
-    cout << "El paciente " << nombre << " ha sido registrado correctamente." << endl;
-}
-
-void mostrar_pacientes() {
-    if (cola_pacientes.empty()) {
-        cout << "No hay pacientes registrados." << endl;
-    }
-    else {
-        int i = 1;
-        cout << "Listado de pacientes registrados:" << endl;
-        // Recorrer la cola y mostrar los pacientes en orden de registro
-        while (!cola_pacientes.empty()) {
-            Paciente* paciente_actual = cola_pacientes.front();
-            cout << i << ". " << paciente_actual->nombre << " - Documento: " << paciente_actual->documento << endl;
-            cola_pacientes.pop();
-            i++;
-        }
-    }
-}
-
 int main() {
-    int opcion = 0;
-    while (opcion != 3) {
-        cout << "\nMenú de opciones:" << endl;
-        cout << "1. Registrar paciente" << endl;
-        cout << "2. Ver pacientes registrados en orden de registro" << endl;
-        cout << "3. Salir" << endl;
-        cout << "Ingrese el número de la opción que desea: ";
+    queue<Paciente> cola_pacientes;
+    int opcion;
+    do {
+        cout << "Menu:\n";
+        cout << "1. Registrar paciente\n";
+        cout << "2. Ver pacientes registrados\n";
+        cout << "3. Cuantos pacientes se han registrado\n";
+        cout << "4. Salir\n";
+        cout << "Ingrese una opcion: ";
         cin >> opcion;
-        cin.ignore(); // Ignorar el salto de línea después de ingresar la opción
-
-        switch (opcion) {
-        case 1:
-            registrar_paciente();
-            break;
-        case 2:
-            mostrar_pacientes();
-            break;
-        case 3:
-            cout << "Saliendo del programa..." << endl;
-            break;
-        default:
-            cout << "Opción inválida. Intente nuevamente." << endl;
-            break;
+        
+        switch(opcion) {
+            case 1:
+                Paciente paciente;
+                paciente.nombre = new string;
+                paciente.numero_documento = new int;
+                cout << "Ingrese el nombre del paciente: ";
+                cin >> *paciente.nombre;
+                cout << "Ingrese el número de documento del paciente: ";
+                cin >> *paciente.numero_documento;
+                cola_pacientes.push(paciente);
+                cout << "Paciente registrado exitosamente.\n\n";
+                break;
+            case 2:
+                if (cola_pacientes.empty()) {
+                    cout << "No hay pacientes registrados.\n\n";
+                } else {
+                    cout << "Lista de pacientes en orden de registro:\n";
+                    int num_registro = 1;
+                    queue<Paciente> copia_cola_pacientes = cola_pacientes;
+                    while (!copia_cola_pacientes.empty()) {
+                        Paciente paciente_actual = copia_cola_pacientes.front();
+                        cout << num_registro << ". " << *paciente_actual.nombre << " - " << *paciente_actual.numero_documento << "\n";
+                        copia_cola_pacientes.pop();
+                        num_registro++;
+                    }
+                    cout << "\n";
+                }
+                break;
+            case 3:
+                cout << "Se han registrado " << cola_pacientes.size() << " pacientes.\n\n";
+                break;
+            case 4:
+                cout << "Hasta luego!\n";
+                break;
+            default:
+                cout << "Opcion invalida. Intente de nuevo.\n\n";
+                break;
         }
-    }
-
-    // Liberar la memoria reservada en el heap para cada paciente
+    } while (opcion != 4);
+    
+    // Liberar memoria
     while (!cola_pacientes.empty()) {
-        Paciente* paciente_actual = cola_pacientes.front();
-        delete paciente_actual;
+        Paciente paciente_actual = cola_pacientes.front();
+        delete paciente_actual.nombre;
+        delete paciente_actual.numero_documento;
         cola_pacientes.pop();
     }
-
+    
     return 0;
 }
+
